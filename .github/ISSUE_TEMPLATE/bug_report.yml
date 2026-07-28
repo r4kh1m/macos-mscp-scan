@@ -1,0 +1,65 @@
+name: Bug report
+description: Report a reproducible problem with macos-cis-scan.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include passwords, tokens, private keys, serial numbers, host or
+        user names, IP addresses, or a complete unredacted audit report.
+  - type: input
+    id: script_version
+    attributes:
+      label: Script version or release tag
+      placeholder: "v0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "26.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: CPU architecture
+      options:
+        - Apple Silicon (arm64)
+        - Intel (x86_64)
+    validations:
+      required: true
+  - type: dropdown
+    id: baseline
+    attributes:
+      label: Baseline
+      options:
+        - cis_lvl1
+        - cis_lvl2
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and sanitized output
+      description: Include only the smallest redacted excerpt needed to reproduce the problem.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed sensitive device and account details from this report.
+          required: true
+        - label: This is not a security vulnerability; for those I will use private reporting.
+          required: true

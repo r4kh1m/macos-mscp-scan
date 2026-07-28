@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and compatibility feedback
+    url: https://github.com/r4kh1m/macos-cis-scan/discussions
+    about: Use GitHub Discussions for non-bug feedback and questions.
+  - name: Private security report
+    url: https://github.com/r4kh1m/macos-cis-scan/security/advisories/new
+    about: Do not disclose security vulnerabilities in public issues.
