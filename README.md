@@ -1,108 +1,141 @@
-# macos-cis-scan
+# macos-mscp-scan
 
 Run a **read-only** CIS security audit with the NIST
 [macOS Security Compliance Project (mSCP)](https://pages.nist.gov/macos_security/).
-The generated mSCP audit runs only with `--check`, never `--fix` or
-`--cfc`.
+The wrapper generates and invokes only mSCP's `--check` mode; it never uses
+`--fix` or `--cfc`.
 
-## Run a CIS Level 1 check
+## AI-assisted quick start (current source)
 
-Copy this entire block into a terminal. It downloads and verifies release
-`v0.1.0` in `/tmp`, runs the audit, then removes only the downloaded release
-files. The report remains in a separate `/tmp/mscp_…` directory so you can
-read it.
+Give the repository to an AI agent and ask it to follow `AGENTS.md`. The agent
+may prepare the scan without administrator access:
 
 ```zsh
-(
-  set -e
-  work_dir="$(mktemp -d /tmp/macos-cis-scan-v0.1.0.XXXXXX)"
-  trap 'rm -rf "$work_dir"' EXIT
-  cd "$work_dir"
-
-  curl -fLO https://github.com/r4kh1m/macos-cis-scan/releases/download/v0.1.0/scan_cis.zsh
-  curl -fLO https://github.com/r4kh1m/macos-cis-scan/releases/download/v0.1.0/SHA256SUMS
-  curl -fLO https://github.com/r4kh1m/macos-cis-scan/releases/download/v0.1.0/SHA256SUMS.sig
-  curl -fLO https://github.com/r4kh1m/macos-cis-scan/releases/download/v0.1.0/r4kh1m-release-signing-key.pub
-
-  shasum -a 256 -c SHA256SUMS
-  {
-    printf 'r4kh1m-release namespaces="file" '
-    cat r4kh1m-release-signing-key.pub
-  } > allowed_signers
-  ssh-keygen -Y verify -f allowed_signers -I r4kh1m-release -n file -s SHA256SUMS.sig < SHA256SUMS
-
-  # Change cis_lvl1 to cis_lvl2 only after a pilot.
-  zsh scan_cis.zsh --baseline cis_lvl1
-)
+zsh ./scan_cis.zsh --baseline cis_lvl1 --prepare-only
 ```
 
-The block stops if a download or verification fails. The parentheses run it in
-a separate shell, so its cleanup does not affect your terminal.
-
-## Before you run
-
-- macOS 14 Sonoma, 15 Sequoia, or 26 Tahoe; macOS 13 and earlier are not
-  supported by this release;
-- an administrator account;
-- bundled `zsh`, `curl`, `tar`, `shasum`, and `ssh-keygen`;
-- `git`, and the system `ruby` and `gem` commands;
-- HTTPS access to GitHub, PyPI, and RubyGems; and
-- about 1 GB free on the volume backing `/tmp`.
-
-You do not need to install Python, pip, a virtual environment, Bundler, or Ruby
-gems in advance. The script puts them in its temporary run directory. It uses
-the system Ruby interpreter without installing packages into system or user gem
-directories.
-
-## Baselines
-
-- `cis_lvl1` — default; a practical starting point for a personal or standard
-  work Mac.
-- `cis_lvl2` — substantially stricter; pilot it before broad use.
-
-## Find and delete the report
-
-At the end, the script prints a directory such as:
+When preparation finishes, the script prints:
 
 ```text
-/tmp/mscp-cis_lvl1.A1b2C3
+PREPARATION COMPLETE — USER ACTION REQUIRED
 ```
 
-Inside it:
+The AI must stop and show the exact `--run-prepared` command. Open your normal
+macOS Terminal and run that command yourself. Review the confirmation prompt
+and enter the administrator password only there. After the audit finishes, the
+AI can find the report through the stable `latest-cis_lvl1.txt` pointer and
+help interpret it.
+
+The separation is enforced by the interface: preparation is always the default
+phase, while the audit starts only with an explicit `--run-prepared RUN_DIR` in
+an interactive terminal. See the [AI-assisted workflow](docs/ai-workflow.md)
+and [results guide](docs/results-guide.md).
+
+## Run without an AI
+
+The same two phases apply. First prepare Level 1 (the default):
+
+```zsh
+zsh ./scan_cis.zsh --baseline cis_lvl1
+```
+
+Then copy the one command printed under `USER ACTION REQUIRED` into your normal
+Terminal. The second phase checks the prepared files, asks for confirmation,
+then lets macOS request administrator authentication.
+
+Use `cis_lvl2` only after testing its stricter controls:
+
+```zsh
+zsh ./scan_cis.zsh --baseline cis_lvl2 --prepare-only
+```
+
+## Requirements
+
+- macOS 14 Sonoma, 15 Sequoia, or 26 Tahoe;
+- Apple Silicon or Intel Mac;
+- an administrator account for the separate audit phase;
+- bundled macOS command-line tools plus `git`, system `ruby`, and `gem`;
+- HTTPS access to GitHub, PyPI, and RubyGems; and
+- about 1 GB free on the volume backing `$TMPDIR`.
+
+Python, pip packages, Bundler and Ruby gems are isolated under the temporary
+run/cache directories. Nothing is installed in system or user gem locations.
+
+## Reports and cache
+
+Current source stores everything it owns under the current user's macOS
+temporary directory, not under `~/Library`:
+
+```text
+${TMPDIR%/}/macos-mscp-scan/
+├── cache/v1-…/                         # reusable, disposable dependencies
+├── runs/cis_lvl1.A1b2C3/report/        # one isolated prepared/completed run
+├── latest-prepared-cis_lvl1.txt        # run waiting for the user
+└── latest-cis_lvl1.txt                 # latest completed run
+```
+
+The report can contain:
 
 ```text
 report/
-├── cis_lvl1_check.txt  # main report: passed and failed rules
-└── provenance.txt      # versions, hashes, and the mSCP commit used
+├── cis_lvl1_check.txt
+├── scan-output.audit.plist
+├── scan-output_baseline.log
+├── baseline.yaml
+├── *.html and *.pdf
+├── prepared-state.txt
+├── audit-completed.txt
+├── provenance.txt
+├── python-packages.txt
+├── ruby-gems.txt
+└── script.sha256
 ```
 
-Read or copy what you need, then delete the **exact path printed by your run**:
+Each run has a unique directory; stable pointer files remove the need to guess
+that name. The cached CPython archive is checked against its pinned SHA-256
+before every extraction. pip download data and Bundler packages are reused,
+although every run still gets an isolated virtual environment and gem
+installation. To remove dependencies without deleting reports:
 
 ```zsh
-rm -rf /tmp/mscp-cis_lvl1.A1b2C3
+zsh ./scan_cis.zsh --clear-cache
 ```
+
+`$TMPDIR` is deliberately disposable: macOS may purge it after a restart,
+during maintenance, or under storage pressure. Copy any report you need to
+retain to a permanent location you choose. Do not post an unredacted report.
 
 ## What changes on the Mac?
 
-The audit reads configuration with `sudo`; it does not remediate settings.
-During the audit, mSCP temporarily writes one plist under
-`/Library/Preferences` and one log under `/Library/Logs`. The wrapper
-restores existing files or removes ones created by the run before it exits.
+Preparation does not use `sudo` and does not inspect system security settings.
+The user-only audit reads configuration with `sudo`; it does not remediate it.
+mSCP temporarily writes a plist under `/Library/Preferences` and a log under
+`/Library/Logs`. The wrapper copies current results into the private report,
+then restores the pre-scan files or removes files created by the run.
 
-macOS still records normal system events such as `sudo` authentication and
-process execution. Those records are intentionally left intact.
+macOS still records normal events such as `sudo` authentication and process
+execution. Those system records are intentionally left intact.
 
-## Trust and support
+## Signed stable release
 
-The command verifies the release SHA-256 manifest and its detached SSH
-signature before the audit runs. The script pins the mSCP commit and verifies
-the portable Python archive it downloads; `provenance.txt` records those
-inputs for the completed run.
+The latest signed release is **v0.1.0**. It predates the two-phase workflow and
+temporary dependency cache: its single command prepares and immediately runs
+the audit, and its report layout differs from current source. Download and
+verify it with the complete block in [v0.1.0 release notes](docs/releases/v0.1.0.md).
 
-Questions and compatibility reports belong in
-[GitHub Discussions](https://github.com/r4kh1m/macos-cis-scan/discussions).
-For reproducible bugs, use [GitHub Issues](https://github.com/r4kh1m/macos-cis-scan/issues).
-Do not post an unredacted report publicly. For a vulnerability in this wrapper,
-follow [SECURITY.md](SECURITY.md).
+The root `SHA256SUMS`, `SHA256SUMS.sig`, and release public key attest the
+v0.1.0 release artifact only. They do not attest an edited development
+worktree. A future release must publish a new manifest and signature.
 
-The wrapper and its documentation are released under the [MIT License](LICENSE).
+## Trust, support and development
+
+The wrapper pins the mSCP commit and portable CPython archive; every run records
+its inputs in `provenance.txt`. See [Compatibility](docs/compatibility.md) for
+the tested matrix.
+
+Questions belong in
+[GitHub Discussions](https://github.com/r4kh1m/macos-mscp-scan/discussions),
+reproducible bugs in
+[GitHub Issues](https://github.com/r4kh1m/macos-mscp-scan/issues), and security
+reports follow [SECURITY.md](SECURITY.md). Development guidance is in
+[CONTRIBUTING.md](CONTRIBUTING.md). The repository uses the [MIT License](LICENSE).

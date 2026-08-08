@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem with macos-cis-scan.
+description: Report a reproducible problem with macos-mscp-scan.
 title: "bug: "
 labels:
   - bug

@@ -1,8 +1,8 @@
 # Compatibility
 
-`macos-cis-scan` version 0.1.0 pins mSCP 2.0 commit
-`5b3d76a532d8a0ddb34d9c5dcb7fa8e191bc40be`. Its macOS rule library contains
-targets for macOS 14.0, 15.0, and 26.0 only.
+`macos-mscp-scan` version 0.1.0 and the current development version pin mSCP 2.0
+commit `5b3d76a532d8a0ddb34d9c5dcb7fa8e191bc40be`. Its macOS rule library
+contains targets for macOS 14.0, 15.0, and 26.0 only.
 
 | macOS version | Tool behavior | Validation status |
 | --- | --- | --- |
@@ -17,3 +17,7 @@ MDM, or organisational configuration.
 
 Please report successful and unsuccessful runs in GitHub Discussions with the
 baseline, macOS version, architecture, and sanitized rule identifiers.
+
+The two-phase preparation path is exercised by the repository smoke test. An
+end-to-end audit still requires a user-controlled interactive Terminal because
+the project does not automate administrator authentication.
