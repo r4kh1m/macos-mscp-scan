@@ -4,8 +4,13 @@ All notable changes are documented here.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-09
+
 ### Changed
 
+- Make the `personal` security-posture baseline the default for personally administered
+  Macs outside organizational MDM; unchanged `cis_lvl1` and `cis_lvl2` reports remain
+  available explicitly.
 - Split every scan into a non-privileged preparation phase and an explicit,
   user-only interactive audit phase.
 - Keep scan runs and reusable dependency caches under the current user's
@@ -18,6 +23,11 @@ All notable changes are documented here.
 
 ### Added
 
+- Add a personal profile derived from CIS Level 1 that replaces selected
+  MDM/configuration-profile checks with effective local-state checks and removes
+  policy-only controls. It is explicitly not a CIS Benchmark assessment.
+- Record the personal profile definition, exact custom rules, and their
+  SHA-256 hashes in every prepared personal report.
 - Add `--clear-cache` to delete cached dependencies without deleting reports.
 - Add `--prepare-only` and validated `--run-prepared RUN_DIR` interfaces.
 - Add an AI-agent contract, an AI workflow, a results interpretation guide,

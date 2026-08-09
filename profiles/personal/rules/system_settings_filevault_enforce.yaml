@@ -1,0 +1,18 @@
+id: system_settings_filevault_enforce
+title: Verify FileVault Encryption Is Enabled
+discussion: |
+  FileVault protects data at rest on the startup volume. This check
+  verifies the current encryption state. It does not require the
+  `dontAllowFDEDisable` managed preference and does not claim that a user or
+  administrator is prevented from disabling FileVault later.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          /usr/bin/fdesetup status 2>/dev/null | /usr/bin/grep -Ec '^FileVault is On\.$'
+        result:
+          integer: 1
+      fix:
+        additional_info: Enable FileVault in System Settings > Privacy & Security > FileVault and store the recovery method safely.
+mobileconfig_info: []

@@ -1,0 +1,21 @@
+id: system_settings_internet_sharing_disable
+title: Verify Internet Sharing Is Not Running
+discussion: |
+  This check verifies that the InternetSharing process is not
+  running. It does not require the `forceInternetSharingOff` managed
+  preference and does not prevent the feature from being enabled later.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          if /usr/bin/pgrep -x InternetSharing >/dev/null 2>&1; then
+            echo "false"
+          else
+            echo "true"
+          fi
+        result:
+          string: 'true'
+      fix:
+        additional_info: Turn off Internet Sharing in System Settings > General > Sharing.
+mobileconfig_info: []

@@ -1,0 +1,21 @@
+id: system_settings_guest_account_disable
+title: Verify the Guest Account Is Disabled
+discussion: |
+  This check queries the effective Guest account state rather than
+  requiring the `DisableGuestAccount` and `EnableGuestAccount` managed
+  preferences.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          if /usr/sbin/sysadminctl -guestAccount status 2>&1 | /usr/bin/grep -Eq 'Guest account (is )?disabled\.'; then
+            echo "true"
+          else
+            echo "false"
+          fi
+        result:
+          string: 'true'
+      fix:
+        additional_info: Disable Guest User in System Settings > Users & Groups.
+mobileconfig_info: []

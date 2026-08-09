@@ -1,0 +1,26 @@
+id: system_settings_diagnostics_reports_disable
+title: Verify Automatic Diagnostic Submission Is Disabled
+discussion: |
+  This privacy check reads the effective automatic-submission
+  choice. It does not require the `allowDiagnosticSubmission` restriction
+  normally delivered by device management.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          value=$(/usr/bin/osascript -l JavaScript << EOS
+          $.NSUserDefaults.alloc.initWithSuiteName('com.apple.SubmitDiagInfo')\
+          .objectForKey('AutoSubmit').js
+          EOS
+          )
+          if [[ -z "$value" || "$value" == "false" ]]; then
+            echo "true"
+          else
+            echo "false"
+          fi
+        result:
+          string: 'true'
+      fix:
+        additional_info: Review Analytics & Improvements in System Settings > Privacy & Security.
+mobileconfig_info: []

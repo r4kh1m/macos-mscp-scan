@@ -1,0 +1,16 @@
+id: system_settings_time_server_configure
+title: Verify the Configured Network Time Server
+discussion: |
+  This check queries the effective network time server rather than
+  requiring the `com.apple.MCX` timeServer managed preference.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          /usr/sbin/systemsetup -getnetworktimeserver 2>/dev/null | /usr/bin/awk -F': ' '/^Network Time Server:/ {print $2}'
+        result:
+          string: $ODV
+      fix:
+        additional_info: Select an appropriate network time server in System Settings > General > Date & Time.
+mobileconfig_info: []

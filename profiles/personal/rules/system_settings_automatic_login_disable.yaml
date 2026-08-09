@@ -1,0 +1,22 @@
+id: system_settings_automatic_login_disable
+title: Verify Automatic Login Is Disabled
+discussion: |
+  This check verifies that no automatic-login user or automatic
+  login credential file exists. It does not require a profile that prevents
+  automatic login from being enabled later.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          auto_login_user=$(/usr/bin/defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null || true)
+          if [[ -z "$auto_login_user" && ! -e /etc/kcpassword ]]; then
+            echo "true"
+          else
+            echo "false"
+          fi
+        result:
+          string: 'true'
+      fix:
+        additional_info: Disable automatic login in System Settings > Users & Groups > Login Options.
+mobileconfig_info: []

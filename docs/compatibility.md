@@ -6,14 +6,19 @@ contains targets for macOS 14.0, 15.0, and 26.0 only.
 
 | macOS version | Tool behavior | Validation status |
 | --- | --- | --- |
-| 26 Tahoe | Supported | End-to-end audit run on Apple Silicon |
-| 15 Sequoia | Supported | Community validation requested |
-| 14 Sonoma | Supported | Community validation requested |
+| 26 Tahoe | Supported | CIS end-to-end audit; personal generation and script validation on Apple Silicon |
+| 15 Sequoia | Supported | Personal generation and script validation; community audit validation requested |
+| 14 Sonoma | Supported | Personal generation and script validation; community audit validation requested |
 | 13 Ventura and earlier | Rejected before downloads | Requires a separate mSCP 1.0 workflow |
 
-The script supports `arm64` and `x86_64` portable CPython archives. It does
-not claim that every individual CIS rule applies unchanged to every hardware,
-MDM, or organisational configuration.
+The script supports `arm64` and `x86_64` portable CPython archives. It does not
+claim that every individual CIS rule applies unchanged to every hardware, MDM,
+or organisational configuration.
+
+The `personal` profile is derived from the matching CIS Level 1 rule selection
+for each supported OS. Its custom rules use macOS command interfaces available
+on all three targets, but an end-to-end privileged audit still needs community
+validation on macOS 14 and 15. The profile is not a CIS Benchmark assessment.
 
 Please report successful and unsuccessful runs in GitHub Discussions with the
 baseline, macOS version, architecture, and sanitized rule identifiers.

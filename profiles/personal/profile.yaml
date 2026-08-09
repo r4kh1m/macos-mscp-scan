@@ -1,0 +1,48 @@
+name: personal
+source_baseline: cis_lvl1
+title: Personal Mac Security Baseline
+description: >-
+  A read-only security posture baseline for personally administered Macs
+  that are not enrolled in organizational MDM. It is derived from the mSCP
+  CIS Level 1 rule selection, replaces
+  managed-enforcement checks with checks of effective local state where a
+  reliable macOS interface exists, and removes controls whose only measurable
+  state is an organization-delivered restriction. It is not a CIS Benchmark
+  assessment and does not claim CIS compliance.
+excluded_rules:
+  - os_airdrop_disable
+  - os_firewall_log_enable
+  - os_mail_summary_disable
+  - os_mdm_require
+  - os_notes_transcription_disable
+  - os_notes_transcription_summary_disable
+  - os_on_device_dictation_enforce
+  - os_safari_advertising_privacy_protection_enable
+  - os_safari_open_safe_downloads_disable
+  - os_safari_prevent_cross-site_tracking_enable
+  - os_safari_show_full_website_address_enable
+  - os_safari_show_status_bar_enabled
+  - os_safari_warn_fraudulent_website_enable
+  - os_software_update_deferral
+  - os_writing_tools_disable
+  - supplemental_cis_manual
+  - system_settings_airplay_receiver_disable
+  - system_settings_external_intelligence_disable
+  - system_settings_external_intelligence_sign_in_disable
+  - system_settings_loginwindow_loginwindowtext_enable
+  - system_settings_personalized_advertising_disable
+  - system_settings_siri_disable
+overridden_rules:
+  - os_gatekeeper_enable
+  - system_settings_automatic_login_disable
+  - system_settings_diagnostics_reports_disable
+  - system_settings_filevault_enforce
+  - system_settings_firewall_enable
+  - system_settings_firewall_stealth_mode_enable
+  - system_settings_guest_account_disable
+  - system_settings_internet_sharing_disable
+  - system_settings_screensaver_ask_for_password_delay_enforce
+  - system_settings_screensaver_password_enforce
+  - system_settings_screensaver_timeout_enforce
+  - system_settings_time_server_configure
+  - system_settings_time_server_enforce

@@ -1,0 +1,24 @@
+id: system_settings_screensaver_timeout_enforce
+title: Verify Automatic Display Sleep Timeout
+discussion: |
+  On personally administered Macs, macOS may not expose an effective screensaver
+  `idleTime` preference without a profile. This check uses the effective
+  display-sleep timers for every configured power source as the inactivity
+  boundary. A zero (never) or longer timeout fails the check.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          /usr/bin/pmset -g custom | /usr/bin/awk -v maximum="$ODV" '
+            $1 == "displaysleep" {
+              found += 1
+              if ($2 == 0 || ($2 * 60) > maximum) bad = 1
+            }
+            END { print (found > 0 && bad == 0) ? "true" : "false" }
+          '
+        result:
+          string: 'true'
+      fix:
+        additional_info: Configure display sleep for every power source at or below the allowed inactivity timeout.
+mobileconfig_info: []

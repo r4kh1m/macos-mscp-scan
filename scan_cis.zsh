@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Read-only macOS CIS compliance scan using NIST mSCP 2.0.
+# Read-only macOS security and CIS compliance scans using NIST mSCP 2.0.
 # It never invokes --fix or --cfc. Runs and discardable download caches stay
 # under the current user's temporary directory. Two mSCP runtime files are
 # copied into the report and then restored or removed before exit.
@@ -10,11 +10,15 @@ typeset -r REPO_URL="https://github.com/usnistgov/macos_security.git"
 typeset -r MSCP_COMMIT="5b3d76a532d8a0ddb34d9c5dcb7fa8e191bc40be"
 typeset -r PYTHON_RELEASE="20260610"
 typeset -r PYTHON_VERSION="3.13.14"
-typeset -r SCRIPT_VERSION="0.2.0-dev"
+typeset -r SCRIPT_VERSION="0.3.0"
 typeset -r CACHE_FORMAT_VERSION="1"
 typeset script_path="${0:A}"
 typeset -r script_name="${0:t}"
-typeset baseline="cis_lvl1"
+typeset -r script_dir="${script_path:h}"
+typeset -r personal_profile="$script_dir/profiles/personal/profile.yaml"
+typeset -r personal_rules_dir="$script_dir/profiles/personal/rules"
+typeset -r personal_builder="$script_dir/scripts/build_personal_baseline.py"
+typeset baseline="personal"
 typeset clear_cache=0
 typeset prepare_only=0
 typeset prepared_run=""
@@ -22,11 +26,11 @@ typeset baseline_was_set=0
 
 usage() {
   print "Usage:"
-  print "  zsh $script_name [--baseline cis_lvl1|cis_lvl2] [--prepare-only]"
+  print "  zsh $script_name [--baseline personal|cis_lvl1|cis_lvl2] [--prepare-only]"
   print "  zsh $script_name --run-prepared RUN_DIR"
   print "  zsh $script_name --clear-cache"
   print ""
-  print "  --baseline NAME     CIS baseline to check (default: cis_lvl1)."
+  print "  --baseline NAME     Baseline to check (default: personal)."
   print "  --prepare-only      Explicitly select the default preparation-only phase."
   print "  --run-prepared DIR  User-only interactive audit of a prepared run."
   print "  --clear-cache       Delete cached downloads without deleting reports."
@@ -89,14 +93,23 @@ if [[ -n "$prepared_run" && $baseline_was_set -eq 1 ]]; then
 fi
 
 case "$baseline" in
-  cis_lvl1|cis_lvl2)
+  personal|cis_lvl1|cis_lvl2)
     ;;
   *)
     print -u2 "Unsupported baseline: $baseline"
-    print -u2 "Supported baselines: cis_lvl1, cis_lvl2"
+    print -u2 "Supported baselines: personal, cis_lvl1, cis_lvl2"
     exit 64
     ;;
 esac
+
+if [[ "$baseline" == "personal" && -z "$prepared_run" && $clear_cache -eq 0 ]]; then
+  if [[ ! -f "$personal_profile" || -L "$personal_profile" \
+    || ! -f "$personal_builder" || -L "$personal_builder" \
+    || ! -d "$personal_rules_dir" || -L "$personal_rules_dir" ]]; then
+    print -u2 "The bundled personal profile is missing or unsafe."
+    exit 1
+  fi
+fi
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   print -u2 "This script must run on macOS."
@@ -309,6 +322,9 @@ prepare_run() {
   local audit_script_relative=""
   local audit_script_sha256=""
   local script_sha256=""
+  local source_baseline="$baseline"
+  local source_baseline_file=""
+  local custom_asset=""
 
   ensure_private_directory "$CACHE_ROOT"
   ensure_private_directory "$CACHE_DIR"
@@ -473,8 +489,39 @@ prepare_run() {
   python -m pip freeze > "$REPORT_DIR/python-packages.txt"
   "$bundle_command" list > "$REPORT_DIR/ruby-gems.txt"
 
-  ./mscp.py --os_name macos --os_version "$os_version" baseline -k "$baseline"
-  baseline_file="$(find custom/baselines -maxdepth 1 -type f -name "${baseline}_macos_*.yaml" -print -quit)"
+  if [[ "$baseline" == "personal" ]]; then
+    source_baseline="cis_lvl1"
+  fi
+  ./mscp.py --os_name macos --os_version "$os_version" baseline -k "$source_baseline"
+
+  if [[ "$baseline" == "personal" ]]; then
+    source_baseline_file="$(find custom/baselines -maxdepth 1 -type f -name "${source_baseline}_macos_${os_version}.yaml" -print -quit)"
+    if [[ -z "$source_baseline_file" ]]; then
+      print -u2 "Could not find the generated $source_baseline source baseline."
+      exit 1
+    fi
+    for custom_asset in "$personal_rules_dir/"*.yaml; do
+      if [[ ! -f "$custom_asset" || -L "$custom_asset" ]]; then
+        print -u2 "The bundled personal rule is missing or unsafe: $custom_asset"
+        exit 1
+      fi
+    done
+    mkdir -p custom/rules
+    cp "$personal_rules_dir/"*.yaml custom/rules/
+    baseline_file="custom/baselines/${baseline}_macos_${os_version}.yaml"
+    python "$personal_builder" \
+      --source "$source_baseline_file" \
+      --profile "$personal_profile" \
+      --output "$baseline_file"
+    cp "$personal_profile" "$REPORT_DIR/profile-definition.yaml"
+    mkdir -p "$REPORT_DIR/custom-rules"
+    cp "$personal_rules_dir/"*.yaml "$REPORT_DIR/custom-rules/"
+    for custom_asset in "$personal_builder" "$personal_profile" "$personal_rules_dir/"*.yaml; do
+      print "$(shasum -a 256 "$custom_asset" | awk '{print $1}')  ${custom_asset#$script_dir/}"
+    done > "$REPORT_DIR/personal-customizations.sha256"
+  else
+    baseline_file="$(find custom/baselines -maxdepth 1 -type f -name "${baseline}_macos_${os_version}.yaml" -print -quit)"
+  fi
   if [[ -z "$baseline_file" ]]; then
     print -u2 "Could not find the generated $baseline baseline."
     exit 1
@@ -529,7 +576,7 @@ load_prepared_run() {
     exit 64
   fi
   case "${requested_run:t}" in
-    cis_lvl1.*|cis_lvl2.*)
+    personal.*|cis_lvl1.*|cis_lvl2.*)
       ;;
     *)
       print -u2 "Prepared run has an unexpected directory name: ${requested_run:t}"
@@ -564,7 +611,7 @@ load_prepared_run() {
 
   baseline="$(state_value "$state_file" baseline)"
   case "$baseline" in
-    cis_lvl1|cis_lvl2)
+    personal|cis_lvl1|cis_lvl2)
       ;;
     *)
       print -u2 "Prepared run contains an unsupported baseline."

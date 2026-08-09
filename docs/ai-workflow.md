@@ -6,11 +6,16 @@ and start the privileged audit.
 
 ## 1. AI preparation phase
 
-From the repository root, the AI runs:
+From the repository root, the AI prepares the requested baseline. For a
+personally administered Mac not enrolled in organizational MDM, use the default
+`personal` profile:
 
 ```zsh
-zsh ./scan_cis.zsh --baseline cis_lvl1 --prepare-only
+zsh ./scan_cis.zsh --baseline personal --prepare-only
 ```
+
+Use `cis_lvl1` or `cis_lvl2` only when the user asks for the unchanged upstream
+CIS compliance view.
 
 Preparation does not use `sudo`, does not inspect system security settings and
 does not run the audit. It creates a private, uniquely named run under:
@@ -24,11 +29,13 @@ the selected baseline, builds HTML/PDF guidance, hashes the generated audit
 script and writes a stable pointer such as:
 
 ```text
-${TMPDIR%/}/macos-mscp-scan/latest-prepared-cis_lvl1.txt
+${TMPDIR%/}/macos-mscp-scan/latest-prepared-personal.txt
 ```
 
-It then prints `USER ACTION REQUIRED` and one fully quoted command. The AI must
-show that command to the user and stop.
+For `personal`, the report also records the exact profile definition, custom
+rules, and customization hashes. The script then prints
+`USER ACTION REQUIRED` and one fully quoted command. The AI must show it to the
+user and stop.
 
 ## 2. User-only audit phase
 
@@ -36,7 +43,7 @@ The user opens the normal macOS Terminal and runs the exact command printed by
 the preparation phase. It has this form:
 
 ```zsh
-zsh /absolute/path/to/scan_cis.zsh --run-prepared /private/.../runs/cis_lvl1.XXXXXX
+zsh /absolute/path/to/scan_cis.zsh --run-prepared /private/.../runs/personal.XXXXXX
 ```
 
 The wrapper verifies that the prepared run, wrapper, pinned mSCP commit and
@@ -54,13 +61,14 @@ After the user confirms that the audit finished, the AI can locate the report
 without guessing its unique directory name:
 
 ```zsh
-run_dir="$(cat "${TMPDIR%/}/macos-mscp-scan/latest-cis_lvl1.txt")"
+run_dir="$(cat "${TMPDIR%/}/macos-mscp-scan/latest-personal.txt")"
 ```
 
-Start with `report/cis_lvl1_check.txt` and
-`report/scan-output.audit.plist`, then use `report/baseline.yaml` and the
-generated guidance for rule details. Follow [Results guide](results-guide.md)
-instead of interpreting the result order as risk priority.
+Start with `report/personal_check.txt` and
+`report/scan-output.audit.plist`, then use `report/baseline.yaml`,
+`report/profile-definition.yaml`, `report/custom-rules/`, and the generated
+guidance for rule details. Follow [Results guide](results-guide.md) instead of
+interpreting the result order as risk priority.
 
 Completed reports and dependency caches remain under `$TMPDIR`, which macOS may
 purge. Copy a report to a user-chosen permanent directory if it must be kept.

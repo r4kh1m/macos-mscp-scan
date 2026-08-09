@@ -1,0 +1,27 @@
+id: os_gatekeeper_enable
+title: Verify Gatekeeper Assessments Are Enabled
+discussion: |
+  Gatekeeper helps prevent untrusted software from running. This
+  check queries the effective Gatekeeper state rather than requiring a
+  configuration-profile preference.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          if /usr/sbin/spctl --status 2>/dev/null | /usr/bin/grep -Eq '^assessments enabled$'; then
+            echo "true"
+          else
+            echo "false"
+          fi
+        result:
+          string: 'true'
+      fix:
+        additional_info: Enable Gatekeeper in System Settings > Privacy & Security.
+    '14.0':
+      enforcement_info:
+        check:
+          shell: /usr/sbin/spctl --status 2>/dev/null | /usr/bin/grep -Ec '^assessments enabled$'
+          result:
+            integer: 1
+mobileconfig_info: []
