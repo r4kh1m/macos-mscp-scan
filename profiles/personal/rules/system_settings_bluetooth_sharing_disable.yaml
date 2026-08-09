@@ -1,0 +1,21 @@
+id: system_settings_bluetooth_sharing_disable
+title: Verify Bluetooth Sharing Is Off
+discussion: |
+  This check reads the active user's effective Bluetooth Sharing preference.
+  An absent preference is the macOS default off state.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          bluetooth_sharing=$(/usr/bin/sudo -u "$CURRENT_USER" /usr/bin/defaults -currentHost read com.apple.Bluetooth PrefKeyServicesEnabled 2>/dev/null)
+          if [[ "$bluetooth_sharing" == "1" ]]; then
+            echo "1"
+          else
+            echo "0"
+          fi
+        result:
+          integer: 0
+      fix:
+        additional_info: Turn off Bluetooth Sharing in System Settings > General > Sharing.
+mobileconfig_info: []

@@ -1,0 +1,21 @@
+id: system_settings_rae_disable
+title: Verify Remote Application Scripting Is Not Listening
+discussion: |
+  This check verifies that no process is listening on the Remote Apple Events
+  TCP port. It measures current network exposure without requiring a permanent
+  launchd disable override.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          if /usr/sbin/lsof -nP -iTCP:3031 -sTCP:LISTEN 2>/dev/null | /usr/bin/grep -q .; then
+            echo "0"
+          else
+            echo "1"
+          fi
+        result:
+          integer: 1
+      fix:
+        additional_info: Turn off Remote Application Scripting in System Settings > General > Sharing.
+mobileconfig_info: []

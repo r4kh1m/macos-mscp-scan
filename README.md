@@ -64,9 +64,11 @@ zsh ./scan_cis.zsh --baseline personal --prepare-only
 
 It starts from the mSCP CIS Level 1 rule selection, replaces selected
 configuration-profile checks with checks of effective local state, and removes
-rules whose only measurable state is an organization-delivered restriction. It
-is **not** a CIS Benchmark assessment and does not claim CIS compliance. The
-exact changes are documented in the
+organization-policy-only, optional forensic logging, global password-policy
+and privacy-choice rules that do not answer the default profile's current-state
+security question. It is **not** a CIS Benchmark assessment and does not claim
+CIS compliance. Excluded rules are outside scope, not passes. The exact changes
+are documented in the
 [Personal Mac Security Baseline guide](docs/personal-baseline.md).
 
 Use the unchanged upstream baselines when the question is CIS compliance or
@@ -153,12 +155,13 @@ execution. Those system records are intentionally left intact.
 
 ## Signed stable release
 
-The latest signed release is **v0.3.0**. It includes the `personal` baseline,
-the two-phase AI/user workflow, reusable dependency caches, stable report
-pointers, and unchanged opt-in CIS Level 1 and Level 2 baselines.
+The latest signed release is **v0.4.0**. It refines the `personal` baseline
+around effective local state, removes controls outside the default personal
+threat model, and retains the two-phase AI/user workflow and unchanged opt-in
+CIS Level 1 and Level 2 baselines.
 
 Download and verification instructions are in the
-[v0.3.0 release notes](docs/releases/v0.3.0.md). Every release publishes its
+[v0.4.0 release notes](docs/releases/v0.4.0.md). Every release publishes its
 own source archive, SHA-256 manifest, detached SSH signature, and release public
 key as GitHub release assets.
 

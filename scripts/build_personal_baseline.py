@@ -99,7 +99,7 @@ def main() -> int:
     print(
         f"Built {args.output}: "
         f"{sum(len(section['rules']) for section in kept_sections)} rules, "
-        f"{len(removed_rule_ids)} policy-only rules removed, "
+        f"{len(removed_rule_ids)} out-of-scope rules removed, "
         f"{len(active_overrides)} local-state checks customized."
     )
     return 0

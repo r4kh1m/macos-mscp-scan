@@ -1,0 +1,23 @@
+id: os_sudo_timeout_configure
+title: Verify the Sudo Credential Cache Expires Within Two Minutes
+discussion: |
+  This check reads sudo's effective authentication timestamp timeout. Values
+  from zero through two minutes limit unattended credential reuse while still
+  allowing a short sequence of administrative commands without repeated
+  password prompts. Negative values, which disable expiration, do not pass.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          sudo_timeout=$(/usr/bin/sudo /usr/bin/sudo -V 2>/dev/null | /usr/bin/awk -F': ' '/Authentication timestamp timeout:/ {sub(/ minutes.*/, "", $2); print $2; exit}')
+          if [[ -n "$sudo_timeout" ]] && /usr/bin/awk -v value="$sudo_timeout" 'BEGIN { exit !(value >= 0 && value <= 2) }'; then
+            echo "1"
+          else
+            echo "0"
+          fi
+        result:
+          integer: 1
+      fix:
+        additional_info: Set Defaults timestamp_timeout=2 in a validated file under /etc/sudoers.d.
+mobileconfig_info: []

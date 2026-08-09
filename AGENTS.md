@@ -34,8 +34,9 @@ execution environment.
   applicable.
 - The result list is not ordered by severity. Do not invent a severity score;
   use the rule guidance, device role, threat model, and operational impact.
-- Do not describe `personal` as CIS-compliant. Its policy-only exclusions are
-  outside scope, not passes. Use raw `cis_lvl1` or `cis_lvl2` for CIS questions.
+- Do not describe `personal` as CIS-compliant. Its organization-policy and
+  optional forensic-logging exclusions are outside scope, not passes. Use raw
+  `cis_lvl1` or `cis_lvl2` for CIS questions.
 - Do not upload, publish, or paste an unredacted report into an external
   service. Ask before reading files unrelated to the requested analysis.
 - Do not delete prepared runs or completed reports automatically. `$TMPDIR` is

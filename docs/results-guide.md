@@ -27,8 +27,10 @@ every `false` value as an independently verified pass.
 The plist is a flat result set. Its order and rule number do not indicate
 severity, exploitability, urgency, or remediation cost.
 
-For the personal profile, excluded policy-only rules are outside scope. They
-do not appear in the plist and must not be counted as passes.
+For the personal profile, excluded organization-policy, forensic logging,
+global password-policy and privacy-choice rules are outside scope. They do not
+appear in the plist and must not be counted as passes. Use a raw CIS baseline
+when those controls are part of the question being assessed.
 
 ## Which files to use
 

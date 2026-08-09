@@ -1,14 +1,15 @@
 id: system_settings_firewall_enable
 title: Verify the macOS Application Firewall Is Enabled
 discussion: |
-  This check queries the effective Application Firewall state. It
-  does not require a configuration profile that prevents later changes.
+  This check queries the effective Application Firewall state. Both the
+  standard enabled state and Block All mode satisfy the check. It does not
+  require a configuration profile that prevents later changes.
 platforms:
   macOS:
     enforcement_info:
       check:
         shell: |-
-          if /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null | /usr/bin/grep -Eq '^Firewall is enabled\. \(State = 1\)$'; then
+          if /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null | /usr/bin/grep -Eq '\(State = [12]\)$'; then
             echo "true"
           else
             echo "false"
@@ -21,7 +22,7 @@ platforms:
       enforcement_info:
         check:
           shell: |-
-            if /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null | /usr/bin/grep -Eq '^Firewall is enabled\. \(State = 1\)$'; then
+            if /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null | /usr/bin/grep -Eq '\(State = [12]\)$'; then
               echo "true"
             else
               echo "false"

@@ -1,0 +1,21 @@
+id: system_settings_smbd_disable
+title: Verify SMB File Sharing Is Not Listening
+discussion: |
+  This check verifies that no process is listening on the NetBIOS or SMB TCP
+  ports. It measures current network exposure without requiring a permanent
+  launchd disable override.
+platforms:
+  macOS:
+    enforcement_info:
+      check:
+        shell: |-
+          if /usr/sbin/lsof -nP -iTCP:139 -iTCP:445 -sTCP:LISTEN 2>/dev/null | /usr/bin/grep -q .; then
+            echo "0"
+          else
+            echo "1"
+          fi
+        result:
+          integer: 1
+      fix:
+        additional_info: Turn off File Sharing in System Settings > General > Sharing.
+mobileconfig_info: []

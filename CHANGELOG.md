@@ -4,6 +4,32 @@ All notable changes are documented here.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-09
+
+### Changed
+
+- Exclude traditional macOS `auditd` and its dependent audit-file permission,
+  ownership, ACL and retention checks from the default `personal` profile.
+  These optional forensic/compliance controls remain available in unchanged
+  raw CIS baselines and are reported as outside scope, not as passes.
+- Treat Firewall Block All (`State = 2`) as enabled and query screen-lock state
+  in the active user's context so privileged audits do not produce false
+  findings for these effective local settings.
+- Remove install/sudo forensic logging, global CIS password policy, fixed time
+  server, authorization-database hardening, analytics contribution and
+  location-menu visibility checks from the default `personal` scope.
+- Exclude cross-user screen-unlock authorization from the single-user personal
+  threat model and exclude mandatory user-name entry at the login window as a
+  marginal privacy/usability choice. Replace App Store updates, Terminal Secure
+  Keyboard Entry, Bluetooth Sharing, password hints, Remote Apple Events and
+  SMB checks with effective active-user or listening-port checks.
+- Replace the zero-minute CIS sudo timestamp with an effective maximum of two
+  minutes in the personal profile, avoiding repeated prompts during a short
+  administrative workflow while still limiting unattended credential reuse.
+- Preserve upstream mSCP numeric result contracts in customized sudo,
+  Bluetooth Sharing, password-hint, Remote Apple Events and SMB checks so
+  effective-state passes are not misclassified as findings.
+
 ## [0.3.0] - 2026-08-09
 
 ### Changed
